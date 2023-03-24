@@ -8,6 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import etu1919.framework.utilitaire.*;
+import etu1919.framework.mapping.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.HashMap;
 
 
  /**
@@ -30,6 +34,9 @@ public class FrontServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+
+    HashMap <String, Mapping> MappingUrls;
+    
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
             PrintWriter out=response.getWriter();
