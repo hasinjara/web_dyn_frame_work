@@ -1,14 +1,21 @@
-package etu1919.framework.servlet;
+package servlet;
+import mapping.*;
 
+
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import etu1919.framework.utilitaire.*;
-import etu1919.framework.mapping.*;
+import javax.servlet.ServletContext;
+
+import annotation.*;
+import java.util.Vector;
 import java.util.Map;
 import java.util.Objects;
 import java.util.HashMap;
@@ -35,18 +42,48 @@ public class FrontServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
 
-    HashMap <String, Mapping> MappingUrls;
+    HashMap <String, Mapping> MappingUrls; 
     
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        Mapping mapping = new Mapping();
+        try {
+            // Avoir l'url
+            ClassLoader loader = context.getClassLoader();
+            URI uri = Objects.requireNonNull(loader.getResource("")).toURI();
+            File f = new File(uri);
+            String classPath = f.getPath();
+           
+            //inserer dans mapping
+            Vector values = mapping.getAllValuesAnnoted(f, MethodUrl.class);
+            Vector correspondance = null;
+            HashMap <String, Mapping> tmp = new HashMap<String, Mapping>();
+            for (int i = 0; i < values.size(); i++) {
+                correspondance = mapping.getCorrespondanceInPackage(f, MethodUrl.class, values.get(i).toString());
+                for (int j = 0; j < correspondance.size(); j++) {
+                    tmp.put(values.get(i).toString(), (Mapping)(correspondance.get(j)));
+                }
+            }
+            this.MappingUrls = tmp;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+
+    }
+
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
             PrintWriter out=response.getWriter();
-            out.print("Hello world \n");
+            // out.print("Hello world");
             // out.print(request.getRequestURL().toString());
-            // out.print(request.getRequestURI().toString() + "\n");
-            // out.print(request.getContextPath().toString() + "\n");
-            // out.print(request.getServletPath().toString() + "\n");
-            Utilitaire utile = new Utilitaire();
-            out.print(utile.getUrl(request.getServletPath().toString()));
+           
+            for(Map.Entry mapEntry : this.MappingUrls.entrySet()) {
+                out.println("All result");
+                out.println("cle "+ mapEntry.getKey());
+                out.println("valeur "+ ((Mapping)mapEntry.getValue()).getClassName() + " " +((Mapping)mapEntry.getValue()).getMethod());
+            }
     }
 
 
