@@ -1,7 +1,6 @@
 package servlet;
 import mapping.*;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,12 +12,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.ServletContext;
-
 import annotation.*;
 import java.util.Vector;
 import java.util.Map;
 import java.util.Objects;
 import java.util.HashMap;
+import java.lang.ClassLoader;
 
 
  /**
@@ -45,7 +44,7 @@ public class FrontServlet extends HttpServlet {
     HashMap <String, Mapping> MappingUrls; 
     
     public void init() throws ServletException {
-        ServletContext context = getServletContext();
+        ServletContext context = this.getServletContext();
         Mapping mapping = new Mapping();
         try {
             // Avoir l'url
