@@ -5,12 +5,19 @@ import java.util.Date;
 
 import annotation.MethodUrl;
 import filtre.Filtre;
+import mapping.Mapping;
+import modelview.ModelView;
 
 import java.io.File;
 import java.lang.*;
 import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.annotation.*;
+
+import java.util.Objects;
+import java.util.HashMap;
+import java.lang.ClassLoader;
+
 public class Fonction {
     public String[] getAnnotation(Object e) {
         Annotation[] allAnnoted = e.getClass().getAnnotations();
@@ -49,6 +56,31 @@ public class Fonction {
         int ind = len - 6;
     return name_file.substring(0, ind);
     }
+
+    public ModelView getViewByMapping(Mapping entre) throws Exception {
+        ModelView val = new ModelView();
+        try {
+            Class to_instance = Class.forName(entre.getClassName());
+            Object objet = to_instance.getConstructor().newInstance();
+            Method[] allMethod = objet.getClass().getDeclaredMethods();
+            Method to_invoke = null;
+            for (int i = 0; i < allMethod.length; i++) {
+                if(allMethod[i].isAnnotationPresent(MethodUrl.class) == true 
+                && allMethod[i].getName().compareToIgnoreCase(entre.getMethod()) == 0 ) {
+                    to_invoke = allMethod[i];
+                }
+            }
+            val = (ModelView)to_invoke.invoke(objet);
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    return val;
+    }
+
+    // public Class getClassByHisPathName(String pathName) {
+
+    // }
 
     public Class[] getClassInRepository(String repertoire) throws Exception {
         File file = new File(repertoire);
@@ -190,6 +222,8 @@ public class Fonction {
         }
     return val;
     }
+
+    
 
     // public String getValuesUrl(Class class_type) {
     //     String val = "";

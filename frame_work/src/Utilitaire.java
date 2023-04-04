@@ -4,12 +4,9 @@ public class Utilitaire {
     
 
     public String getUrl(String url) {
-        int ind = url.indexOf("/");
-        url = url.substring(ind);
-        ind = url.indexOf("/");
-        url = url.substring(ind);
-        ind = url.indexOf("/");
-        url = url.substring(ind);
-        return url.substring(ind);
+        String[] split = url.split("\\/");
+        String last_split = split[split.length -1];
+        String[] split_var = last_split.split("\\?"); 
+        return split_var[0];
     }
 }
