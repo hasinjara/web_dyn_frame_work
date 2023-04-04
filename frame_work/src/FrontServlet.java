@@ -1,5 +1,7 @@
 package servlet;
 import mapping.*;
+import modelview.ModelView;
+import utilitaire.Utilitaire;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.ServletContext;
 import annotation.*;
+import fonction.Fonction;
+
 import java.util.Vector;
 import java.util.Map;
 import java.util.Objects;
@@ -42,10 +46,30 @@ public class FrontServlet extends HttpServlet {
      */
 
     HashMap <String, Mapping> MappingUrls; 
-    
-    public void init() throws ServletException {
-        ServletContext context = this.getServletContext();
+
+    String getSplit(String url) {
+        Utilitaire u = new Utilitaire();
+    return u.getUrl(url);
+    }
+
+    String getClassPath() {
+    String classPath = null;
+        try {
+            ServletContext context = this.getServletContext();
+            ClassLoader loader = context.getClassLoader();
+            URI uri = Objects.requireNonNull(loader.getResource("")).toURI();
+            File f = new File(uri);
+            classPath = f.getPath();
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println(e.getMessage());
+        }
+    return classPath;
+    }
+
+    void generateMappings() {
         Mapping mapping = new Mapping();
+        ServletContext context = this.getServletContext();
         try {
             // Avoir l'url
             ClassLoader loader = context.getClassLoader();
@@ -67,21 +91,35 @@ public class FrontServlet extends HttpServlet {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+    }
 
-
+    
+    public void init() throws ServletException {
+        generateMappings();
     }
 
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
             PrintWriter out=response.getWriter();
-            // out.print("Hello world");
-            // out.print(request.getRequestURL().toString());
-           
-            for(Map.Entry mapEntry : this.MappingUrls.entrySet()) {
-                out.println("All result");
-                out.println("cle "+ mapEntry.getKey());
-                out.println("valeur "+ ((Mapping)mapEntry.getValue()).getClassName() + " " +((Mapping)mapEntry.getValue()).getMethod());
+            String url_load = getSplit(request.getRequestURL().toString());
+            Fonction ma_fonction = new Fonction();
+            // out.println();
+            try {
+                for(Map.Entry mapEntry : this.MappingUrls.entrySet()) {
+                    out.println("All result");
+                    out.println("cle "+ mapEntry.getKey());
+                    out.println("valeur "+ ((Mapping)mapEntry.getValue()).getClassName() + " " +((Mapping)mapEntry.getValue()).getMethod());
+                    if(mapEntry.getKey().toString().compareToIgnoreCase(url_load) == 0) {
+                        // out.println("On peut loader le view");
+                        ModelView view = ma_fonction.getViewByMapping((Mapping)mapEntry.getValue());
+                        // out.println(view.getView());
+                        request.getRequestDispatcher("/"+view.getView()).forward(request, response);
+                    }
+                }
+            } catch (Exception e) {
+                // TODO: handle exception
+                out.println(e.getMessage());
             }
     }
 

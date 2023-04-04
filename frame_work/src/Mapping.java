@@ -5,6 +5,11 @@ import java.util.Vector;
 import annotation.*;
 import fonction.Fonction;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.HashMap;
+import java.lang.ClassLoader;
+
 public class Mapping {
     String className;
     String method;
@@ -149,6 +154,20 @@ public class Mapping {
         } catch (Exception e) {
             // TODO: handle exception
             throw e;
+        }
+    return val;
+    }
+
+    public Mapping getMapppingBykey(HashMap <String, Mapping> all ,String key) {
+        Mapping val = null;
+        for(Map.Entry mapEntry : all.entrySet()) {
+            // out.println("All result");
+            // out.println("cle "+ mapEntry.getKey());
+            // out.println("valeur "+ ((Mapping)mapEntry.getValue()).getClassName() + " " +((Mapping)mapEntry.getValue()).getMethod());
+            if(mapEntry.getKey().toString().compareToIgnoreCase(key) == 0) {
+                //return new Mapping(((Mapping)mapEntry.getValue()).getClassName(), ((Mapping)mapEntry.getValue()).getMethod());
+                return (Mapping)mapEntry.getValue();
+            }
         }
     return val;
     }
