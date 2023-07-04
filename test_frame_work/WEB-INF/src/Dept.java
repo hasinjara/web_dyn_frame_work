@@ -23,8 +23,8 @@ public class Dept {
         this.notin = notin;
     }
 
-    @MethodUrl(url = "Dept-lister")
-    public ModelView  deptList() throws Exception {
+    @MethodUrl(url = "Dept-list")
+    public ModelView  deptList() {
         ModelView mv = new ModelView();
         try {
             mv.setView("Dept.jsp");
@@ -35,32 +35,11 @@ public class Dept {
             mv.addItem("list", list);
         } catch (Exception e) {
             // TODO: handle exception
-            throw e;
+            System.out.println(e.getMessage());
         }
+        
     return mv;
        
-    }
-
-    @MethodUrl(url = "Dept-add")
-    public ModelView  form() throws Exception {
-        ModelView mv = new ModelView();
-        try {
-            mv.setView("Form.jsp");
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-    return mv;
-    }
-
-    @MethodUrl(url = "Dept-save")
-    public ModelView  save() throws Exception {
-        ModelView mv = new ModelView();
-        try {
-            mv.setView("save.jsp");
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-    return mv;
     }
 
     public void setId(String id) {
