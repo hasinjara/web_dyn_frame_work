@@ -1,6 +1,6 @@
 package table;
-import frame_work.src.annotation.*;
-import frame_work.src.modelview.*;
+import annotation.*;
+import modelview.*;
 
 
 @TableName(nom_table = "Departement")
@@ -26,12 +26,18 @@ public class Dept {
     @MethodUrl(url = "Dept-list")
     public ModelView  deptList() {
         ModelView mv = new ModelView();
-        mv.setView("Dept.jsp");
-        Dept[] list = new Dept[3];
-        for (int i = 0; i < list.length; i++) {
-            list[i] = new Dept("DD", "dept", "no");
+        try {
+            mv.setView("Dept.jsp");
+            Dept[] list = new Dept[3];
+            for (int i = 0; i < list.length; i++) {
+                list[i] = new Dept("DD", "dept", "no");
+            }
+            mv.addItem("list", list);
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println(e.getMessage());
         }
-        mv.addItem("list", list);
+        
     return mv;
        
     }
