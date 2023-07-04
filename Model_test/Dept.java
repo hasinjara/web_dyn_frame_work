@@ -31,7 +31,9 @@ public class Dept {
             mv.setView("Dept.jsp");
             Dept[] list = new Dept[3];
             for (int i = 0; i < list.length; i++) {
-                list[i]=new Dept("DD","dept","no");
+
+                list[i] = new Dept("DD", "dept", "no");
+
             }
             mv.addItem("list", list);
         } catch (Exception e) {
@@ -64,6 +66,7 @@ public class Dept {
     return mv;
     }
 
+
     @MethodUrl(url = "Dept-Id")
     public ModelView  FindById(@ParamName("nom") String nom, @ParamName("numero")int numero) throws Exception {
         ModelView mv = new ModelView();
@@ -75,6 +78,7 @@ public class Dept {
         }
     return mv;
     }
+
 
     public void setId(String id) {
         this.id = id;

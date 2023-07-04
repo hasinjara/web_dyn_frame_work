@@ -9,7 +9,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.sql.Date;
+
 import java.text.Annotation;
+
+
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,9 +22,11 @@ import javax.servlet.http.HttpSession;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+
 import java.lang.reflect.Parameter;
 
 import javax.security.auth.login.Configuration.Parameters;
+
 import javax.servlet.ServletContext;
 import annotation.*;
 import fonction.Fonction;
@@ -77,14 +82,16 @@ public class FrontServlet extends HttpServlet {
         return classPath;
     }
 
+ 
+
     String toUpperCaseAt(String s, int ind) {
         char[] tab = s.toCharArray();
         String maj = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String min = "abcdefghijklmnopqrstuvwxyz";
         char[] maj_char = maj.toCharArray();
         char[] min_char = min.toCharArray();
-        for (int i = 0; i < maj_char.length; i++) {
-            if (tab[ind] == min_char[i]) {
+        for(int i = 0 ; i<maj_char.length ; i++) {
+            if(tab[ind] == min_char[i]) {
                 tab[ind] = maj_char[i];
             }
         }
@@ -123,6 +130,7 @@ public class FrontServlet extends HttpServlet {
         Fonction ma_fonction = new Fonction();
         PrintWriter out = response.getWriter();
         try {
+
             for (Map.Entry mapEntry : this.MappingUrls.entrySet()) {
                 out.println("All results");
                 out.println("cle " + mapEntry.getKey());
@@ -133,11 +141,13 @@ public class FrontServlet extends HttpServlet {
 
                     // construire la classe
                     Class class_mapping = Class.forName(((Mapping) mapEntry.getValue()).getClassName());
+
                     Object object = class_mapping.getConstructor().newInstance();
                     System.out.println("Object " + object);
 
                     // avoir les attributs du classe
                     Field[] attributs = class_mapping.getDeclaredFields();
+
                     Class default_class = String.class;
                     for (Field field : attributs) {
                         out.println("Atributs :" + field.getName());
@@ -214,6 +224,7 @@ public class FrontServlet extends HttpServlet {
                     }
 
                     ModelView view = ma_fonction.getViewByMapping((Mapping) mapEntry.getValue());
+
                     HashMap<String, Object> data_to_send = view.getData();
                     if (data_to_send != null) {
                         for (Map.Entry data : data_to_send.entrySet()) {
