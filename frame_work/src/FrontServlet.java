@@ -137,57 +137,76 @@ public class FrontServlet extends HttpServlet {
 
     void dispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String url_load = getSplit(request.getRequestURL().toString());
-        Fonction ma_fonction = new Fonction();
         PrintWriter out = response.getWriter();
+        HttpSession session = request.getSession();
         try {
             for (Map.Entry mapEntry : this.MappingUrls.entrySet()) {
                 out.println("All results");
                 out.println("cle " + mapEntry.getKey());
                 out.println("valeur " + ((Mapping) mapEntry.getValue()).getClassName() + " "
                         + ((Mapping) mapEntry.getValue()).getMethod());
-                if (mapEntry.getKey().toString().compareToIgnoreCase(url_load) == 0) {
-                    System.out.println("On peut loader le view");
+            }
+            Mapping mapping = f.getTarget(url_load, this.MappingUrls);
+            Class class_mapping = Class.forName(mapping.getClassName());
+            
+            String init_param_profil = getInitParameter("profil");
+            String init_param_connected = getInitParameter("connected");
 
-                    // construire la classe
-                    Class class_mapping = Class.forName(((Mapping) mapEntry.getValue()).getClassName());
+            boolean permission = f.verifyAuth(class_mapping, mapping, init_param_profil, init_param_connected, session);
+            System.out.println(init_param_profil + "   huhuhu");
+            System.out.println("permission: " + permission);
+            if(permission == false) {
+                throw new Exception("Vous n'avez pas la permission");
+            }
+            
+            System.out.println("On peut loader le view");
 
-                    Object object;
-                    if(ObjectClass.containsKey(class_mapping) == true) {
-                        object = ObjectClass.get(class_mapping);
-                        f.setDefaultValue(object);
-                        // System.out.println("tafatfatfayatfaytf");
-                    }
-                    else {
-                        object = class_mapping.getConstructor().newInstance();
-                    }
+            // construire la classe
+            
+            Object object;
+            if(ObjectClass.containsKey(class_mapping) == true) {
+                object = ObjectClass.get(class_mapping);
+                f.setDefaultValue(object);
+                // System.out.println("tafatfatfayatfaytf");
+            }
+            else {
+                object = class_mapping.getConstructor().newInstance();
+            }
+            System.out.println("Object " + object);
 
-                    System.out.println("Object " + object);
+            // avoir les attributs du classe
+            Field[] attributs = class_mapping.getDeclaredFields();
+            f.setObjectAttributeByRequest(object, attributs, request, response);
+            
 
-                    // avoir les attributs du classe
-                    Field[] attributs = class_mapping.getDeclaredFields();
-                    f.setObjectAttributeByRequest(object, attributs, request, response);
-                    
+            // invocation du methode
+            f.invokeMethodByRequestParameters(object, request);
 
-                    // invocation du methode
-                    f.invokeMethodByRequestParameters(object, request);
+            // si l'objet n'est pas null
+            // System.out.println(object + " obj");
+            if (object != null) {
+                request.setAttribute(object.getClass().getSimpleName(), object);
+            }
 
-                    // si l'objet n'est pas null
-                    // System.out.println(object + " obj");
-                    if (object != null) {
-                        request.setAttribute(object.getClass().getSimpleName(), object);
-                    }
-
-                    ModelView view = ma_fonction.getViewByMapping((Mapping) mapEntry.getValue(), request);
-                    HashMap<String, Object> data_to_send = view.getData();
-                    if (data_to_send != null) {
-                        for (Map.Entry data : data_to_send.entrySet()) {
-                            request.setAttribute(data.getKey().toString(), data.getValue());
-                        }
-                    }
-                    // out.println(view.getView());
-                    request.getRequestDispatcher("/" + view.getView()).forward(request, response);
+            ModelView view = f.getViewByMapping(mapping, request);
+            HashMap<String, Object> data_to_send = view.getData();
+            if (data_to_send != null) {
+                for (Map.Entry data : data_to_send.entrySet()) {
+                    request.setAttribute(data.getKey().toString(), data.getValue());
                 }
             }
+
+            HashMap<String, Object> session_value = view.getSession();
+            // out.println("session ---- ----");
+            if(session_value != null) {
+                for (Map.Entry data : session_value.entrySet()) {
+                    session.setAttribute(data.getKey().toString(), data.getValue());
+                    System.out.println(session.getAttribute(data.getKey().toString()));
+                }
+            }
+            System.out.println(view.getView());
+            request.getRequestDispatcher("/" + view.getView()).forward(request, response);
+            
         } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
