@@ -9,6 +9,11 @@
     <servlet> 
         <servlet-name>FrontServlet</servlet-name> 
         <servlet-class>servlet.FrontServlet</servlet-class> 
+        <multipart-config>
+            <max-file-size>8000000</max-file-size>
+            <max-request-size>8000000</max-request-size>
+            <file-size-threshold>0</file-size-threshold>
+        </multipart-config>
     </servlet>
 
     <servlet-mapping> 

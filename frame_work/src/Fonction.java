@@ -13,9 +13,10 @@ import java.io.File;
 import java.lang.*;
 import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.*;
 import java.lang.annotation.*;
 
+import fileUpload.*;
 import annotation.*;
 
 import java.util.Objects;
@@ -23,8 +24,27 @@ import java.util.HashMap;
 import java.lang.ClassLoader;
 
 
+import javax.servlet.*; 
+import javax.servlet.http.*;
+
+
 
 public class Fonction {
+    String toUpperCaseAt(String s, int ind) {
+        char[] tab = s.toCharArray();
+        String maj = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String min = "abcdefghijklmnopqrstuvwxyz";
+        char[] maj_char = maj.toCharArray();
+        char[] min_char = min.toCharArray();
+        for (int i = 0; i < maj_char.length; i++) {
+            if (tab[ind] == min_char[i]) {
+                tab[ind] = maj_char[i];
+            }
+        }
+        String res = new String(tab);
+        return res;
+    }
+
     public String[] getAnnotation(Object e) {
         Annotation[] allAnnoted = e.getClass().getAnnotations();
         if(allAnnoted.length == 0) {
@@ -84,8 +104,8 @@ public class Fonction {
     return name_file.substring(0, ind);
     }
 
-    public ModelView getViewByMapping(Mapping entre) throws Exception {
-        ModelView val = new ModelView();
+    public ModelView getViewByMapping(Mapping entre, HttpServletRequest request) throws Exception {
+        ModelView val = null;
         try {
             Class to_instance = Class.forName(entre.getClassName());
             Object objet = to_instance.getConstructor().newInstance();
@@ -94,6 +114,36 @@ public class Fonction {
             for (int i = 0; i < allMethod.length; i++) {
                 if(allMethod[i].isAnnotationPresent(MethodUrl.class) == true 
                 && allMethod[i].getName().compareToIgnoreCase(entre.getMethod()) == 0 ) {
+                    if(verifyParamAnnotaion(allMethod[i].getParameters(), ParamName.class) == true) {
+                        val = invokeMethodByRequestParameters(objet, request);
+                    }
+                    else {
+                        val = (ModelView)allMethod[i].invoke(objet);
+                    }
+                    // to_invoke = allMethod[i];
+                }
+            }
+            // val = (ModelView)to_invoke.invoke(objet);
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    return val;
+    }
+
+    public ModelView getViewByMapping(Mapping entre) throws Exception {
+        ModelView val = null;
+        try {
+            Class to_instance = Class.forName(entre.getClassName());
+            Object objet = to_instance.getConstructor().newInstance();
+            Method[] allMethod = objet.getClass().getDeclaredMethods();
+            Method to_invoke = null;
+            for (int i = 0; i < allMethod.length; i++) {
+                if(allMethod[i].isAnnotationPresent(MethodUrl.class) == true 
+                && allMethod[i].getName().compareToIgnoreCase(entre.getMethod()) == 0 ) {
+                    // if(verifyParamAnnotaion(allMethod[i].getParameters(), ParamName.class) == false) {
+                    //     to_invoke = allMethod[i];
+                    // }
                     to_invoke = allMethod[i];
                 }
             }
@@ -150,6 +200,11 @@ public class Fonction {
         try {
             int count_annotation = countParametersAnnotation(parameters, annotation);
             int count_param = parameters.length;
+
+            if(count_param == 0) {
+                return false;
+            }
+
             if(count_annotation == count_param) {
                 return true;
             }
@@ -261,6 +316,133 @@ public class Fonction {
             throw e;
         }
     return val;
+    }
+
+    public void setObjectAttributeByRequest(Object object, Field field, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        try {
+            field.setAccessible(true);
+            Class default_class = (Class) field.getType();
+            String set = "set" + toUpperCaseAt(field.getName(), 0);
+            if (request.getParameter(field.getName()) != null) {
+                // System.out.println("Type " + default_class + " type " + (Class) field.getType());
+                if (default_class.equals(String.class)) {
+                    object.getClass().getDeclaredMethod(set, default_class).invoke(object,
+                            request.getParameter(field.getName()));
+                }
+                if (default_class.equals(int.class)) {
+                    int a = 0;
+                    if (request.getParameter(field.getName()) != null) {
+                        a = Integer.valueOf(request.getParameter(field.getName()));
+                    }
+                    object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
+                }
+                if (default_class.equals(double.class)) {
+                    double a = 0;
+                    if (request.getParameter(field.getName()) != null) {
+                        a = Double.valueOf(request.getParameter(field.getName()));
+                    }
+                    object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
+                }
+                if (default_class.equals(float.class)) {
+                    float a = 0;
+                    if (request.getParameter(field.getName()) != null) {
+                        a = Float.valueOf(request.getParameter(field.getName()));
+                    }
+                    object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
+                }
+                if (default_class.equals(java.util.Date.class)) {
+                    java.util.Date a = new java.util.Date();
+                    object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
+                }
+
+            }
+            
+            if(default_class.equals(FileUpload.class) == true) {
+                System.out.println("Tafa file upload "+ field.getName());
+                try {
+                    if(request.getPart(field.getName()) != null) {
+                        Part filepart  = request.getPart(field.getName()); 
+                        FileUpload tmp = new FileUpload();
+                        tmp.setNom(filepart.getSubmittedFileName());
+                        tmp.setBytes(filepart.getInputStream().readAllBytes());
+                        System.out.println(tmp.getNom()+" "+ tmp.getBytes());
+                        String fileName = filepart.getSubmittedFileName();
+                        String path = "E:\\" + fileName; // Spécifiez le chemin souhaité sur le serveur
+                        filepart.write(path);
+                        object.getClass().getDeclaredMethod(set, default_class).invoke(object, tmp);
+                        System.out.println("tafa hatram farany");
+                    }
+                } catch (ServletException e) {
+                    // TODO: handle exception
+                    System.out.println(e.getMessage());
+                }
+                
+             
+                // Enumeration<String> parameterNames = request.getParameterNames();
+                // String paramName = "";
+                // while (parameterNames.hasMoreElements()) {
+                //     paramName = parameterNames.nextElement();
+                //     // System.out.println("Nom du champ : " + paramName);
+                //     if(paramName.compareToIgnoreCase(field.getName()) == 0) {
+                //         System.out.println("Nom du champ : " + paramName);
+                        
+                //     }
+                // }
+            }
+            
+            
+        }
+        catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    }
+
+    public void setObjectAttributeByRequest(Object object, Field[] field, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        try {
+            for (Field f : field) {
+                setObjectAttributeByRequest(object, f, request, response);
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    }
+
+    public ModelView invokeMethodByRequestParameters(Object object, HttpServletRequest request)  throws Exception {
+        ModelView val = null;
+        try {
+            Method[] all_methods = this.getMethodsAnnoted(object.getClass(), MethodUrl.class);
+                    // Annotation annotation = null;
+                    Parameter[] parameters = null;
+                    Vector object_attribut = null;
+                    for (int i = 0; i < all_methods.length; i++) {
+                        parameters = all_methods[i].getParameters();
+                        if( verifyParamAnnotaion(parameters, ParamName.class)  == true) {
+                            object_attribut = new Vector<>();
+                            for (int j = 0; j < parameters.length; j++) {
+                                object_attribut.add(this.adequatObjectForParameter(request, parameters[j], all_methods[i] ) )  ;
+                                // System.out.println(object_attribut.get(j));
+                            }
+                            // System.out.println(parameters.length + "  " + object_attribut.toArray().length + " len");
+                            val =  (ModelView)all_methods[i].invoke(object, object_attribut.toArray());
+                            // System.out.println(all_methods[i].getName() +  "  jaoi OI F");
+                        }
+                        // System.out.println("huhuhu");
+                        // if(parameters.length != 0) {
+                        //     System.out.println("huhuhu " + parameters[0]);
+                        // }
+                        // for (int j = 0; j < parameters.length; j++) {
+                        //     System.out.println("Parameter name " +parameters[i].getName());
+                        // }
+                        
+                    }
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+            throw e;
+        }
+        return val;
     }
 
 
