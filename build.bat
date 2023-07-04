@@ -1,4 +1,4 @@
-javac -parameters -d frame_work/src frame_work/src/*.java
+javac -d frame_work/src frame_work/src/*.java
 
 javac -d "test_frame_work\WEB-INF\classes" Model_test/*.java 
 

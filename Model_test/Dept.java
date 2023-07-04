@@ -38,6 +38,7 @@ public class Dept {
         this.notin = notin;
     }
 
+    @Auth(profil = "profil")
     @MethodUrl(url = "Dept-lister")
     public ModelView  deptList() throws Exception {
         ModelView mv = new ModelView();
@@ -63,6 +64,7 @@ public class Dept {
             mv.setView("Form.jsp");
         } catch (Exception e) {
             // TODO: handle exception
+            throw e;
         }
     return mv;
     }
@@ -74,10 +76,26 @@ public class Dept {
             mv.setView("save.jsp");
         } catch (Exception e) {
             // TODO: handle exception
+            throw e;
         }
     return mv;
     }
 
+    @MethodUrl(url = "Dept-login")
+    public ModelView  login() throws Exception {
+        ModelView mv = new ModelView();
+        try {
+            mv.addSession("profil", "profil");
+            mv.addSession("connected", true);
+            mv.setView("login.jsp");
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    return mv;
+    }
+
+    
     @MethodUrl(url = "Dept-Id")
     public ModelView  FindById(@ParamName("nom") String nom, @ParamName("numero")int numero) throws Exception {
         ModelView mv = new ModelView();
@@ -86,6 +104,7 @@ public class Dept {
             System.out.println("nom "+ nom + " num " + numero);
         } catch (Exception e) {
             // TODO: handle exception
+            throw e;
         }
     return mv;
     }

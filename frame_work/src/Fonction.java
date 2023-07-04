@@ -18,13 +18,9 @@ import javax.servlet.http.*;
 import java.lang.annotation.*;
 
 
-import fileUpload.*;
-import annotation.*;
 
 import java.util.Objects;
 import java.util.HashMap;
-import java.lang.ClassLoader;
-
 
 import javax.servlet.*; 
 import javax.servlet.http.*;
@@ -360,7 +356,7 @@ public class Fonction {
             }
             
             if(default_class.equals(FileUpload.class) == true) {
-                System.out.println("Tafa file upload "+ field.getName());
+                // System.out.println("Tafa file upload "+ field.getName());
                 try {
                     if(request.getPart(field.getName()) != null) {
                         Part filepart  = request.getPart(field.getName()); 
@@ -372,7 +368,7 @@ public class Fonction {
                         String path = "E:\\" + fileName; // Spécifiez le chemin souhaité sur le serveur
                         filepart.write(path);
                         object.getClass().getDeclaredMethod(set, default_class).invoke(object, tmp);
-                        System.out.println("tafa hatram farany");
+                        // System.out.println("tafa hatram farany");
                     }
                 } catch (ServletException e) {
                     // TODO: handle exception
@@ -545,6 +541,50 @@ public class Fonction {
             // TODO: handle exception
             throw e;
         }
+    }
+
+    public Mapping getTarget(String url, HashMap<String, Mapping> dictionary) throws Exception {
+        Mapping target = null;
+        for (Map.Entry mapEntry : dictionary.entrySet()) {
+            if(mapEntry.getKey().toString().compareToIgnoreCase(url) == 0) {
+                return (Mapping) mapEntry.getValue();
+            }
+        }
+        if(target == null) {
+            throw new Exception("URL introuvable");
+        }
+        return target;
+    }
+
+    public boolean verifyAuth(Class class_mapping, Mapping mapping,String init_param_profil, String init_param_connect ,HttpSession session) throws Exception {
+        boolean val = false;
+        try {
+            Method action = class_mapping.getDeclaredMethod(mapping.getMethod(), mapping.getParameters());
+            Auth authState = action.getAnnotation(Auth.class) ;
+            if(authState == null) {
+                return true;
+            }
+            else {
+                String profil = authState.profil(); 
+                System.out.println("mv    "+ session.getAttribute(init_param_profil));  
+                if(session.getAttribute(init_param_profil) != null || session.getAttribute(init_param_connect) != null) {
+                    boolean isConnect = (boolean)session.getAttribute(init_param_connect);
+                    if(profil.equals("") && isConnect == true ) {
+                        val = true;
+                    }
+                    else if(session.getAttribute(init_param_profil).equals(profil) && isConnect == true){
+                        // if(session.getAttribute(getInitParameter("profil")).equals(profil))
+                        val = true;
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+
+        return val;
     }
 
     

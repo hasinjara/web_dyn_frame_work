@@ -13,6 +13,7 @@ import java.lang.ClassLoader;
 public class Mapping {
     String className;
     String method;
+    Class<?>[] parameters;
      
     public Mapping() {
     }
@@ -20,6 +21,12 @@ public class Mapping {
     public Mapping(String className, String method) {
         this.className = className;
         this.method = method;
+    }
+
+    public Mapping(String className, String method, Class<?>[] parameters) {
+        this.className = className;
+        this.method = method;
+        this.parameters = parameters;
     }
     
     public String getClassName() {
@@ -38,6 +45,14 @@ public class Mapping {
         this.method = method;
     }
 
+    public void setParameters(Class<?>[] parameters) {
+        this.parameters = parameters;
+    }
+
+    public Class<?>[] getParameters() {
+        return this.parameters;
+    }
+
     public Vector getAllInPackage(File repertoire, Class url_annotaion) throws Exception {
         Vector val = new Vector();
         try {
@@ -50,7 +65,7 @@ public class Mapping {
                 n_class = allInRepository[i].getName();
                 n_method = fonction.getMethodsAnnoted(allInRepository[i], url_annotaion);
                 for (int j = 0; j < n_method.length; j++) {
-                    tmp = new Mapping(n_class, n_method[j].getName());
+                    tmp = new Mapping(n_class, n_method[j].getName(), n_method[j].getParameterTypes());
                     val.add(tmp);
                 }
             }
@@ -122,7 +137,7 @@ public class Mapping {
                 for (int j = 0; j < n_method.length; j++) {
                     MethodUrl method = n_method[j].getAnnotation(MethodUrl.class);
                     if( method.url().compareToIgnoreCase(value_url)  == 0) {
-                        tmp = new Mapping(n_class, n_method[j].getName());
+                        tmp = new Mapping(n_class, n_method[j].getName(), n_method[j].getParameterTypes());
                         val.add(tmp);
                     }
                 }
