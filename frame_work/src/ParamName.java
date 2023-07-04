@@ -3,7 +3,8 @@ package annotation;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface MethodUrl {
-    String url();
+@Target(ElementType.PARAMETER)
+
+public @interface ParamName {
+   String value();
 }

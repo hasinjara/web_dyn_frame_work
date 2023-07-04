@@ -1,4 +1,5 @@
 package table;
+
 import annotation.*;
 import modelview.*;
 
@@ -30,7 +31,9 @@ public class Dept {
             mv.setView("Dept.jsp");
             Dept[] list = new Dept[3];
             for (int i = 0; i < list.length; i++) {
+
                 list[i] = new Dept("DD", "dept", "no");
+
             }
             mv.addItem("list", list);
         } catch (Exception e) {
@@ -62,6 +65,20 @@ public class Dept {
         }
     return mv;
     }
+
+
+    @MethodUrl(url = "Dept-Id")
+    public ModelView  FindById(@ParamName("nom") String nom, @ParamName("numero")int numero) throws Exception {
+        ModelView mv = new ModelView();
+        try {
+            mv.setView("save.jsp");
+            System.out.println("nom "+ nom + " num " + numero);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    return mv;
+    }
+
 
     public void setId(String id) {
         this.id = id;
