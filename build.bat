@@ -1,4 +1,4 @@
-javac -d frame_work/src frame_work/src/*.java
+javac -parameters -d frame_work/src frame_work/src/*.java
 
 cd frame_work\src
 
@@ -10,4 +10,4 @@ cd ..\..\test_frame_work
 
 jar -cf test.war .
 
-copy test.war "D:\Tomcat\webapps"
+copy test.war "E:\z_mael\server\Tomcat\webapps"

@@ -1,7 +1,8 @@
 package fonction;
 import java.sql.*;
+import java.time.*;
 import java.util.*;
-import java.util.Date;
+
 
 import annotation.MethodUrl;
 import filtre.Filtre;
@@ -12,11 +13,16 @@ import java.io.File;
 import java.lang.*;
 import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.annotation.*;
+
+import annotation.*;
 
 import java.util.Objects;
 import java.util.HashMap;
 import java.lang.ClassLoader;
+
+
 
 public class Fonction {
     public String[] getAnnotation(Object e) {
@@ -49,6 +55,27 @@ public class Fonction {
 
     public boolean isAnnoted(Field field, Class annotation) {
         return field.isAnnotationPresent(annotation);
+    }
+
+    public boolean isAnnoted(Parameter parameter, Class annotation) {
+        return parameter.isAnnotationPresent(annotation);
+    }
+
+    int countAnnotation(String repertoire, Class annotation) throws Exception {
+        int val = 0;
+        try {
+            Class[] allInRepository = getClassInRepository(repertoire);
+            for (int i = 0; i < allInRepository.length; i++) {
+                if(isAnnoted(allInRepository[i], annotation) == true) {
+                    val ++;
+                }
+            }
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    return val;
     }
 
     String getNameClass(String name_file) {
@@ -103,12 +130,11 @@ public class Fonction {
     return val;
     }
 
-    int countAnnotation(String repertoire, Class annotation) throws Exception {
+    int countParametersAnnotation(Parameter[] parameters, Class annotation) throws Exception {
         int val = 0;
         try {
-            Class[] allInRepository = getClassInRepository(repertoire);
-            for (int i = 0; i < allInRepository.length; i++) {
-                if(isAnnoted(allInRepository[i], annotation) == true) {
+            for (int i = 0; i < parameters.length; i++) {
+                if(isAnnoted(parameters[i], annotation) == true) {
                     val ++;
                 }
             }
@@ -118,6 +144,20 @@ public class Fonction {
             throw e;
         }
     return val;
+    }
+
+    public boolean verifyParamAnnotaion(Parameter[] parameters, Class annotation) throws Exception {
+        try {
+            int count_annotation = countParametersAnnotation(parameters, annotation);
+            int count_param = parameters.length;
+            if(count_annotation == count_param) {
+                return true;
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw new Exception("Touts les arguments doivent etre annote");
+        }
+        return false;
     }
 
     public Class[] getClassAnnoted(String repertoire, Class annotation) throws Exception {
@@ -221,6 +261,77 @@ public class Fonction {
             throw e;
         }
     return val;
+    }
+
+
+    public <T> T adequatObjectForParameter(HttpServletRequest request, Parameter parameter, Method method)
+            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (request.getParameter(parameter.getAnnotation(ParamName.class).value()) == null) {
+            if (parameter.getType().getSimpleName().equals("int")
+                    || parameter.getType().getSimpleName().equals("Integer")
+                    || parameter.getType().getSimpleName().equals("Double")
+                    || parameter.getType().getSimpleName().equals("double")
+                    || parameter.getType().getSimpleName().equals("long")
+                    || parameter.getType().getSimpleName().equals("Long")
+                    || parameter.getType().getSimpleName().equals("float")
+                    || parameter.getType().getSimpleName().equals("Float")) {
+                return (T) (Number) 0;
+            }
+            return null;
+        }
+        T obj = null;
+        if (parameter.getType().getSimpleName().equals("int")
+                || parameter.getType().getSimpleName().equals("Integer")) {
+            obj = (T) (Integer) Integer
+                    .parseInt(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("float")
+                || parameter.getType().getSimpleName().equals("Float")) {
+            obj = (T) (Float) Float
+                    .parseFloat(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("Long")
+                || parameter.getType().getSimpleName().equals("long")) {
+            obj = (T) (Long) Long
+                    .parseLong(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("double")
+                || parameter.getType().getSimpleName().equals("Double")) {
+            obj = (T) (Double) Double
+                    .parseDouble(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("String")) {
+            obj = (T) (String) request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                    .trim();
+        } else if (parameter.getType().getSimpleName().equals("Date")) {
+            obj = (T) (java.sql.Date) java.sql.Date
+                    .valueOf(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("Time")) {
+            obj = (T) (Time) Time
+                    .valueOf(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("Timestamp")) {
+            obj = (T) (Timestamp) Timestamp
+                    .valueOf(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim());
+        } else if (parameter.getType().getSimpleName().equals("LocalDate")) {
+            obj = (T) (java.time.LocalDate) java.sql.Date
+                    .valueOf(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim())
+                    .toLocalDate();
+        } else if (parameter.getType().getSimpleName().equals("LocalTime")) {
+            obj = (T) (LocalTime) Time
+                    .valueOf(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim())
+                    .toLocalTime();
+        } else if (parameter.getType().getSimpleName().equals("LocalDateTime")) {
+            obj = (T) (LocalDateTime) Timestamp
+                    .valueOf(request.getParameter(parameter.getAnnotation(ParamName.class).value())
+                            .trim())
+                    .toLocalDateTime();
+        }
+        return obj;
     }
 
     
