@@ -2,9 +2,11 @@ package table;
 
 import annotation.*;
 import modelview.*;
+import fileUpload.*;
 
 
 @TableName(nom_table = "Departement")
+@Scope(value = "singleton")
 public class Dept {
     @FieldName(columnName = "id_dept")
     String id;
@@ -13,6 +15,18 @@ public class Dept {
     String name;
 
     String notin;
+    FileUpload File;
+    
+    
+    public FileUpload getFile() {
+        return File;
+    }
+    public void setFile(FileUpload file) {
+        this.File = file;
+    }
+    public String getNamePath(){
+        return File.getPath() ;
+    }
     
 
     public Dept() {
@@ -31,9 +45,7 @@ public class Dept {
             mv.setView("Dept.jsp");
             Dept[] list = new Dept[3];
             for (int i = 0; i < list.length; i++) {
-
-                list[i] = new Dept("DD", "dept", "no");
-
+                list[i]=new Dept("DD","dept","no");
             }
             mv.addItem("list", list);
         } catch (Exception e) {
@@ -66,19 +78,17 @@ public class Dept {
     return mv;
     }
 
-
     @MethodUrl(url = "Dept-Id")
     public ModelView  FindById(@ParamName("nom") String nom, @ParamName("numero")int numero) throws Exception {
         ModelView mv = new ModelView();
         try {
-            mv.setView("save.jsp");
+            mv.setView("Form.jsp");
             System.out.println("nom "+ nom + " num " + numero);
         } catch (Exception e) {
             // TODO: handle exception
         }
     return mv;
     }
-
 
     public void setId(String id) {
         this.id = id;
