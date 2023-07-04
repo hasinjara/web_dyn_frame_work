@@ -9,24 +9,20 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.sql.Date;
-
 import java.text.Annotation;
-
-
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.annotation.MultipartConfig;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
 import java.lang.reflect.Parameter;
 
 import javax.security.auth.login.Configuration.Parameters;
-
 import javax.servlet.ServletContext;
 import annotation.*;
 import fonction.Fonction;
@@ -47,6 +43,12 @@ import java.util.*;
  * @throws ServletException if a servlet-specific error occurs
  * @throws IOException      if an I/O error occurs
  */
+
+// @MultipartConfig(
+//     fileSizeThreshold = 1024 * 1024,  // Taille maximale d'un fichier avant d'être stocké sur le disque (1 Mo)
+//     maxFileSize = 1024 * 1024 * 5,   // Taille maximale d'un fichier (5 Mo)
+//     maxRequestSize = 1024 * 1024 * 10 // Taille maximale totale des données multipartes (10 Mo)
+// )
 public class FrontServlet extends HttpServlet {
 
     /**
@@ -82,23 +84,7 @@ public class FrontServlet extends HttpServlet {
         return classPath;
     }
 
- 
-
-    String toUpperCaseAt(String s, int ind) {
-        char[] tab = s.toCharArray();
-        String maj = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String min = "abcdefghijklmnopqrstuvwxyz";
-        char[] maj_char = maj.toCharArray();
-        char[] min_char = min.toCharArray();
-        for(int i = 0 ; i<maj_char.length ; i++) {
-            if(tab[ind] == min_char[i]) {
-                tab[ind] = maj_char[i];
-            }
-        }
-        String res = new String(tab);
-        return res;
-    }
-
+    
     void generateMappings() {
         Mapping mapping = new Mapping();
         ServletContext context = this.getServletContext();
@@ -130,7 +116,6 @@ public class FrontServlet extends HttpServlet {
         Fonction ma_fonction = new Fonction();
         PrintWriter out = response.getWriter();
         try {
-
             for (Map.Entry mapEntry : this.MappingUrls.entrySet()) {
                 out.println("All results");
                 out.println("cle " + mapEntry.getKey());
@@ -141,81 +126,16 @@ public class FrontServlet extends HttpServlet {
 
                     // construire la classe
                     Class class_mapping = Class.forName(((Mapping) mapEntry.getValue()).getClassName());
-
                     Object object = class_mapping.getConstructor().newInstance();
                     System.out.println("Object " + object);
 
                     // avoir les attributs du classe
                     Field[] attributs = class_mapping.getDeclaredFields();
-
-                    Class default_class = String.class;
-                    for (Field field : attributs) {
-                        out.println("Atributs :" + field.getName());
-                        out.println("Valeur :" + request.getParameter(field.getName()));
-
-                        // recuperation des donnes
-                        if (request.getParameter(field.getName()) != null) {
-                            field.setAccessible(true);
-                            default_class = (Class) field.getType();
-                            System.out.println("Type " + default_class + " type " + (Class) field.getType());
-                            String set = "set" + toUpperCaseAt(field.getName(), 0);
-                            if (default_class.equals(String.class)) {
-                                object.getClass().getDeclaredMethod(set, default_class).invoke(object,
-                                        request.getParameter(field.getName()));
-                            }
-                            if (default_class.equals(int.class)) {
-                                int a = 0;
-                                if (request.getParameter(field.getName()) != null) {
-                                    a = Integer.valueOf(request.getParameter(field.getName()));
-                                }
-                                object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
-                            }
-                            if (default_class.equals(double.class)) {
-                                double a = 0;
-                                if (request.getParameter(field.getName()) != null) {
-                                    a = Double.valueOf(request.getParameter(field.getName()));
-                                }
-                                object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
-                            }
-                            if (default_class.equals(float.class)) {
-                                float a = 0;
-                                if (request.getParameter(field.getName()) != null) {
-                                    a = Float.valueOf(request.getParameter(field.getName()));
-                                }
-                                object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
-                            }
-                            if (default_class.equals(java.util.Date.class)) {
-                                java.util.Date a = new java.util.Date();
-                                object.getClass().getDeclaredMethod(set, default_class).invoke(object, a);
-                            }
-
-                        }
-                    }
+                    f.setObjectAttributeByRequest(object, attributs, request, response);
+                    
 
                     // invocation du methode
-                    Method[] all_methods = f.getMethodsAnnoted(object.getClass(), MethodUrl.class);
-                    // Annotation annotation = null;
-                    Parameter[] parameters = null;
-                    Vector object_attribut = null;
-                    for (int i = 0; i < all_methods.length; i++) {
-                        parameters = all_methods[i].getParameters();
-                        if( f.verifyParamAnnotaion(parameters, ParamName.class)  == true) {
-                            object_attribut = new Vector<>();
-                            for (int j = 0; j < parameters.length; j++) {
-                                object_attribut.add(f.adequatObjectForParameter(request, parameters[j], all_methods[i] ) )  ;
-                                System.out.println(object_attribut.get(j));
-                            }
-                            all_methods[i].invoke(object, object_attribut.toArray());
-                        }
-                        // System.out.println("huhuhu");
-                        // if(parameters.length != 0) {
-                        //     System.out.println("huhuhu " + parameters[0]);
-                        // }
-                        // for (int j = 0; j < parameters.length; j++) {
-                        //     System.out.println("Parameter name " +parameters[i].getName());
-                        // }
-                        
-                    }
+                    f.invokeMethodByRequestParameters(object, request);
 
                     // si l'objet n'est pas null
                     System.out.println(object + " obj");
@@ -223,8 +143,7 @@ public class FrontServlet extends HttpServlet {
                         request.setAttribute(object.getClass().getSimpleName(), object);
                     }
 
-                    ModelView view = ma_fonction.getViewByMapping((Mapping) mapEntry.getValue());
-
+                    ModelView view = ma_fonction.getViewByMapping((Mapping) mapEntry.getValue(), request);
                     HashMap<String, Object> data_to_send = view.getData();
                     if (data_to_send != null) {
                         for (Map.Entry data : data_to_send.entrySet()) {
@@ -237,6 +156,7 @@ public class FrontServlet extends HttpServlet {
             }
         } catch (Exception e) {
             // TODO: handle exception
+            e.printStackTrace();
             throw e;
         }
     }
