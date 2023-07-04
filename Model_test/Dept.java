@@ -6,6 +6,7 @@ import fileUpload.*;
 
 
 @TableName(nom_table = "Departement")
+@Scope(value = "singleton")
 public class Dept {
     @FieldName(columnName = "id_dept")
     String id;

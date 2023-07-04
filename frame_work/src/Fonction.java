@@ -4,10 +4,11 @@ import java.time.*;
 import java.util.*;
 
 
-import annotation.MethodUrl;
 import filtre.Filtre;
 import mapping.Mapping;
 import modelview.ModelView;
+import fileUpload.*;
+import annotation.*;
 
 import java.io.File;
 import java.lang.*;
@@ -15,6 +16,7 @@ import java.lang.reflect.*;
 import java.lang.reflect.InvocationTargetException;
 import javax.servlet.http.*;
 import java.lang.annotation.*;
+
 
 import fileUpload.*;
 import annotation.*;
@@ -514,6 +516,35 @@ public class Fonction {
                     .toLocalDateTime();
         }
         return obj;
+    }
+
+    public void setDefaultValue(Object obj) throws Exception {
+        try {
+            Field[] fields = obj.getClass().getDeclaredFields();
+            Class type;
+            for (Field field : fields) {
+                field.setAccessible(true);
+                type = field.getType(); 
+                if(type.isPrimitive()) {
+                    // boolean, char, boolean, int, double, float, byte, short, long
+                    if(type == boolean.class) {
+                        field.set(obj, false);
+                    }
+                    else if(type == char.class) {
+                        field.set(obj, "");
+                    }
+                    else {
+                        field.set(obj, 0);
+                    }
+                }
+                else {
+                    field.set(obj, null);
+                }
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
     }
 
     

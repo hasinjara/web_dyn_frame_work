@@ -62,6 +62,7 @@ public class FrontServlet extends HttpServlet {
      */
 
     HashMap<String, Mapping> MappingUrls;
+    HashMap<Class, Object> ObjectClass;
     Fonction f = new Fonction();
 
     String getSplit(String url) {
@@ -92,20 +93,43 @@ public class FrontServlet extends HttpServlet {
             // Avoir l'url
             ClassLoader loader = context.getClassLoader();
             URI uri = Objects.requireNonNull(loader.getResource("")).toURI();
-            File f = new File(uri);
-            String classPath = f.getPath();
+            File file = new File(uri);
+            String classPath = file.getPath();
 
             // inserer dans mapping
-            Vector values = mapping.getAllValuesAnnoted(f, MethodUrl.class);
+            Vector values = mapping.getAllValuesAnnoted(file, MethodUrl.class);
             Vector correspondance = null;
             HashMap<String, Mapping> tmp = new HashMap<String, Mapping>();
             for (int i = 0; i < values.size(); i++) {
-                correspondance = mapping.getCorrespondanceInPackage(f, MethodUrl.class, values.get(i).toString());
+                correspondance = mapping.getCorrespondanceInPackage(file, MethodUrl.class, values.get(i).toString());
                 for (int j = 0; j < correspondance.size(); j++) {
                     tmp.put(values.get(i).toString(), (Mapping) (correspondance.get(j)));
                 }
             }
+
+            // singleton
+            HashMap object_class_tmp = new HashMap<Class, Object>();
+            // System.out.println("eoaaa a a a a " + classPath);
+            File[] directories = file.listFiles((current, name) -> new File(current, name).isDirectory());
+            Class[] all_Classes = null;
+            Object obj = null;
+            for (File dir : directories) {
+                all_Classes = f.getClassInRepository(dir.getAbsolutePath().toString());
+                for (Class one_class : all_Classes) {
+                    Scope sc = (Scope)one_class.getAnnotation(Scope.class);
+                    if(sc != null) {
+                        if(sc.value().compareToIgnoreCase("singleton") == 0) {
+                            obj = one_class.getConstructor().newInstance();
+                            object_class_tmp.put(one_class, obj);
+                            // System.out.println("  huhuhuhu  "+ obj);
+                        }
+                    }
+                    
+                }
+            }
+            
             this.MappingUrls = tmp;
+            this.ObjectClass = object_class_tmp;
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -126,7 +150,17 @@ public class FrontServlet extends HttpServlet {
 
                     // construire la classe
                     Class class_mapping = Class.forName(((Mapping) mapEntry.getValue()).getClassName());
-                    Object object = class_mapping.getConstructor().newInstance();
+
+                    Object object;
+                    if(ObjectClass.containsKey(class_mapping) == true) {
+                        object = ObjectClass.get(class_mapping);
+                        f.setDefaultValue(object);
+                        // System.out.println("tafatfatfayatfaytf");
+                    }
+                    else {
+                        object = class_mapping.getConstructor().newInstance();
+                    }
+
                     System.out.println("Object " + object);
 
                     // avoir les attributs du classe
@@ -138,7 +172,7 @@ public class FrontServlet extends HttpServlet {
                     f.invokeMethodByRequestParameters(object, request);
 
                     // si l'objet n'est pas null
-                    System.out.println(object + " obj");
+                    // System.out.println(object + " obj");
                     if (object != null) {
                         request.setAttribute(object.getClass().getSimpleName(), object);
                     }
