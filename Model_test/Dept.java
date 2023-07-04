@@ -1,6 +1,6 @@
 package table;
-import frame_work.src.annotation.*;
-import frame_work.src.modelview.*;
+import annotation.*;
+import modelview.*;
 
 
 @TableName(nom_table = "Departement")
@@ -23,17 +23,44 @@ public class Dept {
         this.notin = notin;
     }
 
-    @MethodUrl(url = "Dept-list")
-    public ModelView  deptList() {
+    @MethodUrl(url = "Dept-lister")
+    public ModelView  deptList() throws Exception {
         ModelView mv = new ModelView();
-        mv.setView("Dept.jsp");
-        Dept[] list = new Dept[3];
-        for (int i = 0; i < list.length; i++) {
-            list[i] = new Dept("DD", "dept", "no");
+        try {
+            mv.setView("Dept.jsp");
+            Dept[] list = new Dept[3];
+            for (int i = 0; i < list.length; i++) {
+                list[i] = new Dept("DD", "dept", "no");
+            }
+            mv.addItem("list", list);
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
         }
-        mv.addItem("list", list);
     return mv;
        
+    }
+
+    @MethodUrl(url = "Dept-add")
+    public ModelView  form() throws Exception {
+        ModelView mv = new ModelView();
+        try {
+            mv.setView("Form.jsp");
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    return mv;
+    }
+
+    @MethodUrl(url = "Dept-save")
+    public ModelView  save() throws Exception {
+        ModelView mv = new ModelView();
+        try {
+            mv.setView("save.jsp");
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    return mv;
     }
 
     public void setId(String id) {
