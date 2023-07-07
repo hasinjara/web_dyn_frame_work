@@ -1,5 +1,7 @@
 package table;
 
+import java.util.Vector;
+
 import annotation.*;
 import modelview.*;
 import fileUpload.*;
@@ -38,7 +40,7 @@ public class Dept {
         this.notin = notin;
     }
 
-    @Auth(profil = "profil")
+    // @Auth(profil = "profil")
     @MethodUrl(url = "Dept-lister")
     public ModelView  deptList() throws Exception {
         ModelView mv = new ModelView();
@@ -49,6 +51,7 @@ public class Dept {
                 list[i]=new Dept("DD","dept","no");
             }
             mv.addItem("list", list);
+            mv.setJson(true);
         } catch (Exception e) {
             // TODO: handle exception
             throw e;
@@ -57,7 +60,15 @@ public class Dept {
        
     }
 
-    @Session()
+    @RestApi
+    @MethodUrl(url = "Dept-all")
+    public Vector allDept() {
+        Vector<Dept> val = new Vector<Dept>();
+        val.add(new Dept("DD","dept","no"));
+        val.add(new Dept("DDI","deptI","noI"));
+        return val;
+    }
+
     @MethodUrl(url = "Dept-add")
     public ModelView  form() throws Exception {
         ModelView mv = new ModelView();
@@ -102,7 +113,7 @@ public class Dept {
         ModelView mv = new ModelView();
         try {
             mv.setView("Form.jsp");
-            System.out.println("nom "+ nom + " num " + numero);
+            // System.out.println("nom "+ nom + " num " + numero);
         } catch (Exception e) {
             // TODO: handle exception
             throw e;
