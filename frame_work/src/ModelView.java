@@ -4,6 +4,7 @@ import java.util.Vector;
 import java.util.Map;
 import java.util.Objects;
 import java.util.HashMap;
+import java.util.List;
 import java.lang.ClassLoader;
 
 import com.google.gson.Gson;
@@ -12,8 +13,31 @@ public class ModelView {
     String view;
     HashMap <String, Object> data;
     HashMap <String, Object> session;
+    Vector<String> to_remove;
     boolean isJson;
+    boolean isValidateSession;
+    
+    public boolean isValidateSession() {
+        return isValidateSession;
+    }
 
+    public void setValidateSession(boolean isValidateSession) {
+        this.isValidateSession = isValidateSession;
+    }
+
+    public Vector<String> getTo_remove() {
+        return to_remove;
+    }
+
+    public void setTo_remove(Vector<String> to_remove) {
+        this.to_remove = to_remove;
+    }
+
+    public void setTo_remove() {
+        this.to_remove = new Vector<String>();
+    }
+
+    
 
     public boolean isJson() {
         return isJson;
@@ -34,7 +58,9 @@ public class ModelView {
     public ModelView() {
         setData();
         setSession();
+        setTo_remove();
         setJson(false);
+        setValidateSession(false);
     }
 
     public ModelView(String view) {
@@ -42,7 +68,9 @@ public class ModelView {
             setView(view);
             setData();
             setSession();
+            setTo_remove();
             setJson(false);
+            setValidateSession(false);
         } catch (Exception e) {
             // TODO: handle exception
             // throw e;
@@ -55,7 +83,9 @@ public class ModelView {
         try {
             setView(view);
             setData(data);
+            setTo_remove();
             setJson(false);
+            setValidateSession(false);
         } catch (Exception e) {
             // TODO: handle exception
             // throw e;
@@ -69,7 +99,9 @@ public class ModelView {
             setView(view);
             setData(data);
             setSession(session);
+            setTo_remove();
             setJson(false);
+            setValidateSession(false);
         } catch (Exception e) {
             // TODO: handle exception
             // throw e;
@@ -123,6 +155,10 @@ public class ModelView {
         Gson gson = new Gson();
         json = gson.toJson(this.getData());
         return json;
+    }
+
+    public void deleteSession(String key) {
+        this.to_remove.add(key);
     }
 
 
