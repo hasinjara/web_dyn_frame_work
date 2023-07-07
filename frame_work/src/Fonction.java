@@ -590,6 +590,52 @@ public class Fonction {
         return val;
     }
 
+    public void deleteSession(ModelView view, HttpSession session) throws Exception {
+        try {
+            Vector<String> to_remove = view.getTo_remove();
+            // Parcourez les clés à supprimer
+            for (String key : to_remove) {
+                if(session.getAttribute(key) != null) {
+                    session.removeAttribute(key);
+                    System.out.println("Session removed: " + key + "   " +session.getAttribute(key) );
+                }
+            }
+
+            if(view.isValidateSession() == true) {
+                session.invalidate();
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+
+        
+    }
+
+    public void recupereSession(Method action ,ModelView view, HttpSession session) throws Exception {
+        try {
+            if(isAnnoted(action, Session.class) == true && session != null ) {
+                // Obtenez toutes les sessions actives
+                Enumeration<String> sessionNames = session.getAttributeNames();
+
+                // Parcourez les sessions et affichez leurs attributs
+                while (sessionNames.hasMoreElements()) {
+                    String sessionName = sessionNames.nextElement();
+                    // HttpSession session = request.getSession(false); // Passez false pour ne pas créer de nouvelle session si elle n'existe pas
+
+                    System.out.println("Session ID: " + session.getId());
+                    System.out.println("Session Attribute: " + session.getAttribute(sessionName));
+                    // Vous pouvez accéder à d'autres informations de session si nécessaire
+                    view.addSession(sessionName, session.getAttribute(sessionName));
+                }
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            // throw e;
+            System.out.println(e.getMessage());
+        }
+    }
+
     
 
     // public String getValuesUrl(Class class_type) {

@@ -69,10 +69,39 @@ public class Dept {
         return val;
     }
 
+    @Session
     @MethodUrl(url = "Dept-add")
     public ModelView  form() throws Exception {
         ModelView mv = new ModelView();
         try {
+            mv.setView("Form.jsp");
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    return mv;
+    }
+
+    @Session
+    @MethodUrl(url = "Dept-delete-session")
+    public ModelView  delete_session() throws Exception {
+        ModelView mv = new ModelView();
+        try {
+            mv.deleteSession("profil");
+            mv.setView("Form.jsp");
+        } catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+    return mv;
+    }
+
+    @Session
+    @MethodUrl(url = "Dept-deleteAll-session")
+    public ModelView  delete_all_session() throws Exception {
+        ModelView mv = new ModelView();
+        try {
+            mv.setValidateSession(true);
             mv.setView("Form.jsp");
         } catch (Exception e) {
             // TODO: handle exception
