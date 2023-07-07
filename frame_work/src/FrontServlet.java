@@ -181,13 +181,15 @@ public class FrontServlet extends HttpServlet {
             
 
             // invocation du methode
-            f.invokeMethodByRequestParameters(object, request);
+            // f.invokeMethodByRequestParameters(object, request);
 
             // si l'objet n'est pas null
             // System.out.println(object + " obj");
             if (object != null) {
                 request.setAttribute(object.getClass().getSimpleName(), object);
             }
+            
+            
 
             ModelView view = f.getViewByMapping(mapping, request);
             HashMap<String, Object> data_to_send = view.getData();
@@ -220,7 +222,7 @@ public class FrontServlet extends HttpServlet {
             if(session_value != null) {
                 for (Map.Entry data : session_value.entrySet()) {
                     session.setAttribute(data.getKey().toString(), data.getValue());
-                    System.out.println(session.getAttribute(data.getKey().toString()));
+                    System.out.println("Session values :: " +session.getAttribute(data.getKey().toString()));
                 }
             }
             System.out.println(view.getView() + " Json "+ view.isJson());
