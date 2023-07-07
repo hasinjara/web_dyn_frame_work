@@ -6,11 +6,22 @@ import java.util.Objects;
 import java.util.HashMap;
 import java.lang.ClassLoader;
 
+import com.google.gson.Gson;
+
 public class ModelView {
     String view;
     HashMap <String, Object> data;
     HashMap <String, Object> session;
+    boolean isJson;
 
+
+    public boolean isJson() {
+        return isJson;
+    }
+
+    public void setJson(boolean isJson) {
+        this.isJson = isJson;
+    }
 
     public HashMap<String, Object> getSession() {
         return session;
@@ -23,6 +34,7 @@ public class ModelView {
     public ModelView() {
         setData();
         setSession();
+        setJson(false);
     }
 
     public ModelView(String view) {
@@ -30,6 +42,7 @@ public class ModelView {
             setView(view);
             setData();
             setSession();
+            setJson(false);
         } catch (Exception e) {
             // TODO: handle exception
             // throw e;
@@ -42,6 +55,7 @@ public class ModelView {
         try {
             setView(view);
             setData(data);
+            setJson(false);
         } catch (Exception e) {
             // TODO: handle exception
             // throw e;
@@ -55,6 +69,7 @@ public class ModelView {
             setView(view);
             setData(data);
             setSession(session);
+            setJson(false);
         } catch (Exception e) {
             // TODO: handle exception
             // throw e;
@@ -102,6 +117,14 @@ public class ModelView {
     public void addSession(String key, Object value) {
         this.session.put(key, value);
     }
+
+    public String getDataJson() {
+        String json = "";
+        Gson gson = new Gson();
+        json = gson.toJson(this.getData());
+        return json;
+    }
+
 
     
 

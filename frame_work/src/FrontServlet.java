@@ -148,6 +148,7 @@ public class FrontServlet extends HttpServlet {
             }
             Mapping mapping = f.getTarget(url_load, this.MappingUrls);
             Class class_mapping = Class.forName(mapping.getClassName());
+            Method action = class_mapping.getDeclaredMethod(mapping.getMethod(), mapping.getParameters());
             
             String init_param_profil = getInitParameter("profil");
             String init_param_connected = getInitParameter("connected");
@@ -196,6 +197,24 @@ public class FrontServlet extends HttpServlet {
                 }
             }
 
+            // recuperation des sessions
+            if(f.isAnnoted(action, Session.class) == true) {
+                // Obtenez toutes les sessions actives
+                Enumeration<String> sessionNames = request.getSession().getAttributeNames();
+
+                // Parcourez les sessions et affichez leurs attributs
+                while (sessionNames.hasMoreElements()) {
+                    String sessionName = sessionNames.nextElement();
+                    // HttpSession session = request.getSession(false); // Passez false pour ne pas créer de nouvelle session si elle n'existe pas
+
+                    System.out.println("Session ID: " + session.getId());
+                    System.out.println("Session Attribute: " + session.getAttribute(sessionName));
+                    // Vous pouvez accéder à d'autres informations de session si nécessaire
+                    view.addSession(sessionName, session.getAttribute(sessionName));
+
+                }
+            }
+
             HashMap<String, Object> session_value = view.getSession();
             // out.println("session ---- ----");
             if(session_value != null) {
@@ -204,8 +223,15 @@ public class FrontServlet extends HttpServlet {
                     System.out.println(session.getAttribute(data.getKey().toString()));
                 }
             }
-            System.out.println(view.getView());
-            request.getRequestDispatcher("/" + view.getView()).forward(request, response);
+            System.out.println(view.getView() + " Json "+ view.isJson());
+            if(view.isJson() == true) {
+                String jsonData = view.getDataJson();
+                out.println(jsonData);
+            }
+            else {
+                request.getRequestDispatcher("/" + view.getView()).forward(request, response);
+            }
+            
             
         } catch (Exception e) {
             // TODO: handle exception
