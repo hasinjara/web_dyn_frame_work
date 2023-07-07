@@ -38,7 +38,7 @@ public class Dept {
         this.notin = notin;
     }
 
-    @Auth(profil = "profil")
+    // @Auth(profil = "profil")
     @MethodUrl(url = "Dept-lister")
     public ModelView  deptList() throws Exception {
         ModelView mv = new ModelView();
@@ -49,6 +49,7 @@ public class Dept {
                 list[i]=new Dept("DD","dept","no");
             }
             mv.addItem("list", list);
+            mv.setJson(true);
         } catch (Exception e) {
             // TODO: handle exception
             throw e;

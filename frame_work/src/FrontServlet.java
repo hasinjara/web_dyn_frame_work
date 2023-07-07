@@ -225,8 +225,15 @@ public class FrontServlet extends HttpServlet {
                     System.out.println("Session values :: " +session.getAttribute(data.getKey().toString()));
                 }
             }
-            System.out.println(view.getView());
-            request.getRequestDispatcher("/" + view.getView()).forward(request, response);
+            System.out.println(view.getView() + " Json "+ view.isJson());
+            if(view.isJson() == true) {
+                String jsonData = view.getDataJson();
+                out.println(jsonData);
+            }
+            else {
+                request.getRequestDispatcher("/" + view.getView()).forward(request, response);
+            }
+            
             
         } catch (Exception e) {
             // TODO: handle exception
