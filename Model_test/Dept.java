@@ -57,6 +57,7 @@ public class Dept {
        
     }
 
+    @Session()
     @MethodUrl(url = "Dept-add")
     public ModelView  form() throws Exception {
         ModelView mv = new ModelView();
