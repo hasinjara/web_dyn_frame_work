@@ -102,8 +102,8 @@ public class Fonction {
     return name_file.substring(0, ind);
     }
 
-    public ModelView getViewByMapping(Mapping entre, HttpServletRequest request) throws Exception {
-        ModelView val = null;
+    public Object getObjectByMapping(Mapping entre, HttpServletRequest request) throws Exception {
+        Object val = null;
         try {
             Class to_instance = Class.forName(entre.getClassName());
             Object objet = to_instance.getConstructor().newInstance();
@@ -116,7 +116,12 @@ public class Fonction {
                         val = invokeMethodByRequestParameters(objet, request);
                     }
                     else {
-                        val = (ModelView)allMethod[i].invoke(objet);
+                        if(allMethod[i].isAnnotationPresent(RestApi.class) == true) {
+                            val = allMethod[i].invoke(objet);
+                        }
+                        else{
+                            val = (ModelView)allMethod[i].invoke(objet);
+                        }
                     }
                     // to_invoke = allMethod[i];
                 }
@@ -407,8 +412,8 @@ public class Fonction {
         }
     }
 
-    public ModelView invokeMethodByRequestParameters(Object object, HttpServletRequest request)  throws Exception {
-        ModelView val = null;
+    public Object invokeMethodByRequestParameters(Object object, HttpServletRequest request)  throws Exception {
+        Object val = null;
         try {
             Method[] all_methods = this.getMethodsAnnoted(object.getClass(), MethodUrl.class);
                     // Annotation annotation = null;
@@ -423,16 +428,14 @@ public class Fonction {
                                 // System.out.println(object_attribut.get(j));
                             }
                             // System.out.println(parameters.length + "  " + object_attribut.toArray().length + " len");
-                            val =  (ModelView)all_methods[i].invoke(object, object_attribut.toArray());
+                            if(all_methods[i].isAnnotationPresent(RestApi.class) == true) {
+                                val =  all_methods[i].invoke(object, object_attribut.toArray());
+                            }
+                            else {
+                                val =  (ModelView)all_methods[i].invoke(object, object_attribut.toArray());
+                            }
                             // System.out.println(all_methods[i].getName() +  "  jaoi OI F");
                         }
-                        // System.out.println("huhuhu");
-                        // if(parameters.length != 0) {
-                        //     System.out.println("huhuhu " + parameters[0]);
-                        // }
-                        // for (int j = 0; j < parameters.length; j++) {
-                        //     System.out.println("Parameter name " +parameters[i].getName());
-                        // }
                         
                     }
         } catch (Exception e) {
@@ -556,10 +559,10 @@ public class Fonction {
         return target;
     }
 
-    public boolean verifyAuth(Class class_mapping, Mapping mapping,String init_param_profil, String init_param_connect ,HttpSession session) throws Exception {
+    public boolean verifyAuth(Method action,String init_param_profil, String init_param_connect ,HttpSession session) throws Exception {
         boolean val = false;
         try {
-            Method action = class_mapping.getDeclaredMethod(mapping.getMethod(), mapping.getParameters());
+            // Method action = class_mapping.getDeclaredMethod(mapping.getMethod(), mapping.getParameters());
             Auth authState = action.getAnnotation(Auth.class) ;
             if(authState == null) {
                 return true;
