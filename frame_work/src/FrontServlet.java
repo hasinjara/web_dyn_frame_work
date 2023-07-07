@@ -148,6 +148,7 @@ public class FrontServlet extends HttpServlet {
             }
             Mapping mapping = f.getTarget(url_load, this.MappingUrls);
             Class class_mapping = Class.forName(mapping.getClassName());
+            Method action = class_mapping.getDeclaredMethod(mapping.getMethod(), mapping.getParameters());
             
             String init_param_profil = getInitParameter("profil");
             String init_param_connected = getInitParameter("connected");
@@ -180,13 +181,15 @@ public class FrontServlet extends HttpServlet {
             
 
             // invocation du methode
-            f.invokeMethodByRequestParameters(object, request);
+            // f.invokeMethodByRequestParameters(object, request);
 
             // si l'objet n'est pas null
             // System.out.println(object + " obj");
             if (object != null) {
                 request.setAttribute(object.getClass().getSimpleName(), object);
             }
+            
+            
 
             ModelView view = f.getViewByMapping(mapping, request);
             HashMap<String, Object> data_to_send = view.getData();
@@ -196,12 +199,30 @@ public class FrontServlet extends HttpServlet {
                 }
             }
 
+            // recuperation des sessions
+            if(f.isAnnoted(action, Session.class) == true) {
+                // Obtenez toutes les sessions actives
+                Enumeration<String> sessionNames = request.getSession().getAttributeNames();
+
+                // Parcourez les sessions et affichez leurs attributs
+                while (sessionNames.hasMoreElements()) {
+                    String sessionName = sessionNames.nextElement();
+                    // HttpSession session = request.getSession(false); // Passez false pour ne pas créer de nouvelle session si elle n'existe pas
+
+                    System.out.println("Session ID: " + session.getId());
+                    System.out.println("Session Attribute: " + session.getAttribute(sessionName));
+                    // Vous pouvez accéder à d'autres informations de session si nécessaire
+                    view.addSession(sessionName, session.getAttribute(sessionName));
+
+                }
+            }
+
             HashMap<String, Object> session_value = view.getSession();
             // out.println("session ---- ----");
             if(session_value != null) {
                 for (Map.Entry data : session_value.entrySet()) {
                     session.setAttribute(data.getKey().toString(), data.getValue());
-                    System.out.println(session.getAttribute(data.getKey().toString()));
+                    System.out.println("Session values :: " +session.getAttribute(data.getKey().toString()));
                 }
             }
             System.out.println(view.getView());
